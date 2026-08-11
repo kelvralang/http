@@ -1,0 +1,10 @@
+CompileFlags:
+  Add:
+    - -std=c++17
+    - -DLIBUS_NO_SSL
+    - -DUWS_NO_ZLIB
+    # clangd's fallback command is rooted at src/ for these translation units.
+    - -I..
+    - -I.
+    - -I../vendor/uWebSockets/src
+    - -I../vendor/uSockets/src
