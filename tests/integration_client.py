@@ -16,9 +16,9 @@ import time
 import traceback
 
 
-def mog_command(mog: Path, *arguments: str) -> list[str]:
-    command = [str(mog), *arguments]
-    if os.environ.get("MOG_HTTP_VALGRIND") == "1":
+def kelvra_command(kelvra: Path, *arguments: str) -> list[str]:
+    command = [str(kelvra), *arguments]
+    if os.environ.get("KELVRA_HTTP_VALGRIND") == "1":
         return [
             "valgrind", "--quiet", "--leak-check=full",
             "--errors-for-leak-kinds=definite", "--error-exitcode=99",
@@ -131,7 +131,7 @@ def read_websocket_frame(connection: socket.socket) -> tuple[int, bytes]:
 
 def websocket_connect(port: int, target: str = "/ws", *, expect_open: bool = True) -> socket.socket:
     connection = socket.create_connection(("127.0.0.1", port), timeout=3)
-    key = base64.b64encode(b"mog-http-test-key").decode("ascii")
+    key = base64.b64encode(b"kelvra-http-key!").decode("ascii")
     request_bytes = (
         f"GET {target} HTTP/1.1\r\n"
         f"Host: 127.0.0.1:{port}\r\n"
@@ -189,27 +189,27 @@ def wait_for_line(process: subprocess.Popen[str], marker: str, timeout: float) -
 
 
 def run_source_case(
-    mog: Path, staged: Path, root: Path, name: str, source: str
+    kelvra: Path, staged: Path, root: Path, name: str, source: str
 ) -> subprocess.CompletedProcess[str]:
     project = root / name
     project.mkdir()
-    (project / "case.mog").write_text(source, encoding="utf-8")
-    (project / "mog.toml").write_text(
+    (project / "case.kel").write_text(source, encoding="utf-8")
+    (project / "kelvra.toml").write_text(
         'kind = "project"\n'
         f'name = "{name}"\n'
         'version = "0.0.0"\n\n'
-        f'[dependencies]\n"github.com/moglang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
+        f'[dependencies]\n"github.com/kelvralang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
         encoding="utf-8",
     )
     environment = os.environ.copy()
-    environment["MOG_CACHE_DIR"] = str(root / f"{name}-cache")
+    environment["KELVRA_CACHE_DIR"] = str(root / f"{name}-cache")
     return subprocess.run(
-        mog_command(mog, "run", "--offline", "case.mog"), cwd=project,
+        kelvra_command(kelvra, "run", "--offline", "case.kel"), cwd=project,
         env=environment, capture_output=True, text=True, timeout=20,
     )
 
 
-def run_example_smokes(mog: Path, package: Path, staged: Path, root: Path) -> None:
+def run_example_smokes(kelvra: Path, package: Path, staged: Path, root: Path) -> None:
     for name, marker in (
         ("http_server", "Listening on"),
         ("websocket_echo", "WebSocket echo listening"),
@@ -217,26 +217,26 @@ def run_example_smokes(mog: Path, package: Path, staged: Path, root: Path) -> No
         port = free_port()
         project = root / f"example-{name}"
         project.mkdir()
-        source = (package / "examples" / f"{name}.mog").read_text(encoding="utf-8")
-        (project / "example.mog").write_text(source.replace("3000", str(port)), encoding="utf-8")
-        (project / "mog.toml").write_text(
+        source = (package / "examples" / f"{name}.kel").read_text(encoding="utf-8")
+        (project / "example.kel").write_text(source.replace("3000", str(port)), encoding="utf-8")
+        (project / "kelvra.toml").write_text(
             'kind = "project"\n'
             f'name = "example-{name}"\n'
             'version = "0.0.0"\n\n'
-            f'[dependencies]\n"github.com/moglang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
+            f'[dependencies]\n"github.com/kelvralang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
             encoding="utf-8",
         )
         environment = os.environ.copy()
-        environment["MOG_CACHE_DIR"] = str(root / f"example-{name}-cache")
+        environment["KELVRA_CACHE_DIR"] = str(root / f"example-{name}-cache")
         process = subprocess.Popen(
-            mog_command(mog, "run", "--offline", "example.mog"), cwd=project,
+            kelvra_command(kelvra, "run", "--offline", "example.kel"), cwd=project,
             env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         )
         try:
             wait_for_line(process, marker, 30)
             if name == "http_server":
                 status, _, body = request(port, "GET", "/hello")
-                if status != 200 or body != b"Hello from Mog":
+                if status != 200 or body != b"Hello from Kelvra":
                     fail(f"HTTP example smoke failed: {status}, {body!r}", process)
                 request(port, "GET", "/stop")
                 process.wait(timeout=10)
@@ -249,12 +249,12 @@ def run_example_smokes(mog: Path, package: Path, staged: Path, root: Path) -> No
             if process.poll() is None:
                 process.kill()
                 process.wait(timeout=5)
-def run_full_suite(mog: Path, package: Path, library: Path) -> None:
-    sample = package / "tests" / "samples" / "full_server.mog"
+def run_full_suite(kelvra: Path, package: Path, library: Path) -> None:
+    sample = package / "tests" / "samples" / "full_server.kel"
     port = free_port()
-    with tempfile.TemporaryDirectory(prefix="mog-http-full-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="kelvra-http-full-") as temporary:
         root = Path(temporary)
-        staged = root / "github.com" / "moglang" / "http"
+        staged = root / "github.com" / "kelvralang" / "http"
         project = root / "project"
         cache = root / "cache"
         shutil.copytree(package, staged, ignore=shutil.ignore_patterns("build", ".git"))
@@ -262,8 +262,8 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
         shutil.copy2(library, staged / library_name)
         project.mkdir()
         source = sample.read_text(encoding="utf-8").replace("__PORT__", str(port) + "i64")
-        (project / "server.mog").write_text(source, encoding="utf-8")
-        (project / "mog.toml").write_text(
+        (project / "server.kel").write_text(source, encoding="utf-8")
+        (project / "kelvra.toml").write_text(
             "\n".join(
                 [
                     'kind = "project"',
@@ -271,16 +271,16 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
                     'version = "0.0.0"',
                     "",
                     "[dependencies]",
-                    f'"github.com/moglang/http" = {{ path = "{staged}", version = "0.1.0" }}',
+                    f'"github.com/kelvralang/http" = {{ path = "{staged}", version = "0.1.0" }}',
                     "",
                 ]
             ),
             encoding="utf-8",
         )
         environment = os.environ.copy()
-        environment["MOG_CACHE_DIR"] = str(cache)
+        environment["KELVRA_CACHE_DIR"] = str(cache)
         process = subprocess.Popen(
-            mog_command(mog, "run", "--offline", "server.mog"),
+            kelvra_command(kelvra, "run", "--offline", "server.kel"),
             cwd=project,
             env=environment,
             stdout=subprocess.PIPE,
@@ -365,7 +365,7 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
             if status != 200 or body != b"null":
                 fail(f"malformed query behavior failed: {status}, {body!r}", process)
             status, headers, body = request(port, "GET", "/custom-content-type")
-            if status != 200 or body != b"custom" or headers.get("content-type") != "application/x-mog":
+            if status != 200 or body != b"custom" or headers.get("content-type") != "application/x-kelvra":
                 fail(f"custom content type was not preserved: {status}, {headers}, {body!r}", process)
             status, _, _ = request(
                 port,
@@ -447,8 +447,8 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
             open_error.close()
 
             timing_instrumented = (
-                os.environ.get("MOG_HTTP_VALGRIND") == "1"
-                or os.environ.get("MOG_HTTP_SANITIZER") == "tsan"
+                os.environ.get("KELVRA_HTTP_VALGRIND") == "1"
+                or os.environ.get("KELVRA_HTTP_SANITIZER") == "tsan"
             )
             if not timing_instrumented:
                 pressure = websocket_connect(port, "/ws-pressure", expect_open=False)
@@ -495,7 +495,7 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
                 pass
             oversized.close()
 
-            for _ in range(int(os.environ.get("MOG_HTTP_CHURN_COUNT", "1000"))):
+            for _ in range(int(os.environ.get("KELVRA_HTTP_CHURN_COUNT", "1000"))):
                 churn = websocket_connect(port)
                 websocket_send(churn, 8, (1000).to_bytes(2, "big"))
                 try:
@@ -527,18 +527,18 @@ def run_full_suite(mog: Path, package: Path, library: Path) -> None:
 
 def main() -> int:
     if len(sys.argv) != 4:
-        print("usage: integration_client.py <mog> <package-dir> <package.so>", file=sys.stderr)
+        print("usage: integration_client.py <kelvra> <package-dir> <package.so>", file=sys.stderr)
         return 2
 
-    mog = Path(sys.argv[1]).resolve()
+    kelvra = Path(sys.argv[1]).resolve()
     package = Path(sys.argv[2]).resolve()
     library = Path(sys.argv[3]).resolve()
-    sample = package / "tests" / "samples" / "milestone1_server.mog"
+    sample = package / "tests" / "samples" / "milestone1_server.kel"
     port = free_port()
 
-    with tempfile.TemporaryDirectory(prefix="mog-http-m1-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="kelvra-http-m1-") as temporary:
         root = Path(temporary)
-        staged = root / "github.com" / "moglang" / "http"
+        staged = root / "github.com" / "kelvralang" / "http"
         project = root / "project"
         cache = root / "cache"
         shutil.copytree(package, staged, ignore=shutil.ignore_patterns("build", ".git"))
@@ -546,8 +546,8 @@ def main() -> int:
         shutil.copy2(library, staged / library_name)
         project.mkdir()
         source = sample.read_text(encoding="utf-8").replace("__PORT__", str(port) + "i64")
-        (project / "server.mog").write_text(source, encoding="utf-8")
-        (project / "mog.toml").write_text(
+        (project / "server.kel").write_text(source, encoding="utf-8")
+        (project / "kelvra.toml").write_text(
             "\n".join(
                 [
                     'kind = "project"',
@@ -555,7 +555,7 @@ def main() -> int:
                     'version = "0.0.0"',
                     "",
                     "[dependencies]",
-                    f'"github.com/moglang/http" = {{ path = "{staged}", version = "0.1.0" }}',
+                    f'"github.com/kelvralang/http" = {{ path = "{staged}", version = "0.1.0" }}',
                     "",
                 ]
             ),
@@ -563,9 +563,9 @@ def main() -> int:
         )
 
         environment = os.environ.copy()
-        environment["MOG_CACHE_DIR"] = str(cache)
+        environment["KELVRA_CACHE_DIR"] = str(cache)
         process = subprocess.Popen(
-            mog_command(mog, "run", "--offline", "server.mog"),
+            kelvra_command(kelvra, "run", "--offline", "server.kel"),
             cwd=project,
             env=environment,
             stdout=subprocess.PIPE,
@@ -576,8 +576,8 @@ def main() -> int:
             wait_for_line(process, "HTTP_MILESTONE1_READY", 30)
 
             stop_before_run = run_source_case(
-                mog, staged, root, "stop-before-run",
-                'const http = @import("github.com/moglang/http")\n'
+                kelvra, staged, root, "stop-before-run",
+                'const http = @import("github.com/kelvralang/http")\n'
                 'const server http.Server = http.createServer()\n'
                 'http.stop(server)\nhttp.stop(server)\nhttp.run(server)\nprint("STOP_BEFORE_RUN_OK")\n',
             )
@@ -591,8 +591,8 @@ def main() -> int:
             occupied_port = occupied.getsockname()[1]
             try:
                 bind_failure = run_source_case(
-                    mog, staged, root, "bind-failure",
-                    'const http = @import("github.com/moglang/http")\n'
+                    kelvra, staged, root, "bind-failure",
+                    'const http = @import("github.com/kelvralang/http")\n'
                     'const server http.Server = http.createServer()\n'
                     f'if (http.listen(server, "127.0.0.1", {occupied_port}i64)) {{ error("unexpected bind") }}\n'
                     'print("BIND_FAILURE_OK")\n',
@@ -603,8 +603,8 @@ def main() -> int:
                 fail(f"bind-failure behavior failed: {bind_failure.stdout}\n{bind_failure.stderr}", process)
 
             duplicate_route = run_source_case(
-                mog, staged, root, "duplicate-route",
-                'const http = @import("github.com/moglang/http")\n'
+                kelvra, staged, root, "duplicate-route",
+                'const http = @import("github.com/kelvralang/http")\n'
                 'const server http.Server = http.createServer()\n'
                 'http.get(server, "/:id/:id", fn(req http.Request, res http.Response) void { http.end(res) })\n',
             )
@@ -612,8 +612,8 @@ def main() -> int:
                 fail(f"duplicate route parameter was accepted: {duplicate_route.stdout}\n{duplicate_route.stderr}", process)
 
             immutable_route = run_source_case(
-                mog, staged, root, "immutable-route",
-                'const http = @import("github.com/moglang/http")\n'
+                kelvra, staged, root, "immutable-route",
+                'const http = @import("github.com/kelvralang/http")\n'
                 'const server http.Server = http.createServer()\n'
                 'const route http.WebSocketRoute = http.createWebSocketRoute()\n'
                 'http.websocket(server, "/ws", route)\n'
@@ -623,8 +623,8 @@ def main() -> int:
                 fail(f"registered WebSocket route remained mutable: {immutable_route.stdout}\n{immutable_route.stderr}", process)
 
             finalizer_stress = run_source_case(
-                mog, staged, root, "server-finalizers",
-                'const http = @import("github.com/moglang/http")\n'
+                kelvra, staged, root, "server-finalizers",
+                'const http = @import("github.com/kelvralang/http")\n'
                 'var index i64 = 0i64\nwhile (index < 1000i64) {\n'
                 '  const server http.Server = http.createServer()\n  index = index + 1i64\n}\n'
                 'print("SERVER_FINALIZERS_OK")\n',
@@ -675,7 +675,7 @@ def main() -> int:
             remaining_stdout = process.stdout.read()
             if "HTTP_MILESTONE1_STOPPED" not in remaining_stdout:
                 fail("run did not return after callback stop", process)
-            run_example_smokes(mog, package, staged, root)
+            run_example_smokes(kelvra, package, staged, root)
         except Exception:
             if process.poll() is None:
                 process.kill()
@@ -683,7 +683,7 @@ def main() -> int:
             raise
 
     print("HTTP Milestone 1 integration passed")
-    run_full_suite(mog, package, library)
+    run_full_suite(kelvra, package, library)
     return 0
 
 

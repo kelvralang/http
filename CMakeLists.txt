@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
-project(mog_http LANGUAGES C CXX)
+project(kelvra_http LANGUAGES C CXX)
 
-option(MOG_HTTP_ENABLE_ASAN_UBSAN "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
-option(MOG_HTTP_ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+option(KELVRA_HTTP_ENABLE_ASAN_UBSAN "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+option(KELVRA_HTTP_ENABLE_TSAN "Enable ThreadSanitizer" OFF)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -28,7 +28,7 @@ target_include_directories(usockets PUBLIC vendor/uSockets/src)
 target_compile_definitions(usockets PUBLIC LIBUS_NO_SSL)
 target_link_libraries(usockets PUBLIC Threads::Threads)
 
-add_library(mog_http MODULE
+add_library(kelvra_http MODULE
     src/package.cpp
     src/host_bridge.cpp
     src/server.cpp
@@ -36,29 +36,29 @@ add_library(mog_http MODULE
     src/websocket.cpp
     src/validation.cpp
 )
-target_include_directories(mog_http PRIVATE
+target_include_directories(kelvra_http PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/uWebSockets/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/uSockets/src"
 )
-target_compile_definitions(mog_http PRIVATE
+target_compile_definitions(kelvra_http PRIVATE
     LIBUS_NO_SSL
     UWS_NO_ZLIB
 )
-target_link_libraries(mog_http PRIVATE usockets Threads::Threads)
-set_target_properties(mog_http PROPERTIES PREFIX "" OUTPUT_NAME "package")
+target_link_libraries(kelvra_http PRIVATE usockets Threads::Threads)
+set_target_properties(kelvra_http PROPERTIES PREFIX "" OUTPUT_NAME "package")
 
-if(MOG_HTTP_ENABLE_ASAN_UBSAN AND MOG_HTTP_ENABLE_TSAN)
+if(KELVRA_HTTP_ENABLE_ASAN_UBSAN AND KELVRA_HTTP_ENABLE_TSAN)
     message(FATAL_ERROR "ASan/UBSan and TSan cannot be enabled together")
 endif()
-if(MOG_HTTP_ENABLE_ASAN_UBSAN)
-    foreach(target usockets mog_http)
+if(KELVRA_HTTP_ENABLE_ASAN_UBSAN)
+    foreach(target usockets kelvra_http)
         target_compile_options(${target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
         target_link_options(${target} PRIVATE -fsanitize=address,undefined)
     endforeach()
-elseif(MOG_HTTP_ENABLE_TSAN)
-    foreach(target usockets mog_http)
+elseif(KELVRA_HTTP_ENABLE_TSAN)
+    foreach(target usockets kelvra_http)
         target_compile_options(${target} PRIVATE -fsanitize=thread -fno-omit-frame-pointer)
         target_link_options(${target} PRIVATE -fsanitize=thread)
     endforeach()

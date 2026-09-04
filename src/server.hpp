@@ -9,7 +9,7 @@
 
 struct us_listen_socket_t;
 
-namespace mog::http {
+namespace kelvra::http {
 
 struct WebSocketRouteState;
 struct WebSocketState;
@@ -65,4 +65,4 @@ private:
   void releaseCallbacks();
 };
 
-} // namespace mog::http
+} // namespace kelvra::http

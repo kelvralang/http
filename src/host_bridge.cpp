@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace mog::http {
+namespace kelvra::http {
 namespace {
 
 std::string copyError(const ExprPackageStringView &error,
@@ -21,7 +21,7 @@ bool HostBridge::copyFrom(const ExprHostApi *api, HostBridge &out,
       api->struct_size < sizeof(ExprHostApi) || api->context == nullptr ||
       api->retainValue == nullptr || api->releaseValue == nullptr ||
       api->getValue == nullptr || api->invokeValue == nullptr) {
-    error = "Mog Host API v2 is required";
+    error = "Kelvra Host API v2 is required";
     return false;
   }
   out = HostBridge(*api);
@@ -41,7 +41,7 @@ bool PersistentRoot::invoke(const ExprPackageValue *args, size_t argc,
   ExprPackageStringView hostError{};
   if (!api_.invokeValue(api_.context, value_, args, argc, &result,
                         &hostError)) {
-    error = copyError(hostError, "Mog callback invocation failed");
+    error = copyError(hostError, "Kelvra callback invocation failed");
     return false;
   }
   return true;
@@ -50,7 +50,7 @@ bool PersistentRoot::invoke(const ExprPackageValue *args, size_t argc,
 bool PersistentRoot::get(ExprPackageValue &result, std::string &error) const {
   ExprPackageStringView hostError{};
   if (!api_.getValue(api_.context, value_, &result, &hostError)) {
-    error = copyError(hostError, "Could not retrieve retained Mog value");
+    error = copyError(hostError, "Could not retrieve retained Kelvra value");
     return false;
   }
   return true;
@@ -62,11 +62,11 @@ bool retainRoot(const HostBridge &host, const ExprPackageValue &borrowed,
   ExprPackageStringView hostError{};
   const ExprHostApi &api = host.api();
   if (!api.retainValue(api.context, &borrowed, &retained, &hostError)) {
-    error = copyError(hostError, "Could not retain Mog callback");
+    error = copyError(hostError, "Could not retain Kelvra callback");
     return false;
   }
   out = std::make_unique<PersistentRoot>(api, retained);
   return true;
 }
 
-} // namespace mog::http
+} // namespace kelvra::http

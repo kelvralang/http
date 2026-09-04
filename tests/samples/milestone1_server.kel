@@ -1,4 +1,4 @@
-const http = @import("github.com/moglang/http")
+const http = @import("github.com/kelvralang/http")
 
 const server http.Server = http.createServer()
 var savedPath str = ""

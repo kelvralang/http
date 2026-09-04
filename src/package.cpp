@@ -11,7 +11,7 @@
 #include <optional>
 #include <string>
 
-namespace mog::http {
+namespace kelvra::http {
 namespace {
 
 bool expectCount(const ExprPackageValue *args, size_t argc, size_t expected,
@@ -1013,8 +1013,8 @@ const ExprPackageRegistration registration = {
 };
 
 } // namespace
-} // namespace mog::http
+} // namespace kelvra::http
 
 extern "C" const ExprPackageRegistration *exprRegisterPackage(void) {
-  return &mog::http::registration;
+  return &kelvra::http::registration;
 }

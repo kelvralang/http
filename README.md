@@ -1,16 +1,16 @@
-# Mog HTTP
+# Kelvra HTTP
 
 Production-oriented, single-threaded HTTP/1.1 and WebSocket server support for
-Mog, backed by uWebSockets 20.77.0 and uSockets.
+Kelvra, backed by uWebSockets 20.77.0 and uSockets.
 
 ## Install
 
 ```sh
-mog add github.com/moglang/http@v0.1.0
+kelvra add github.com/kelvralang/http@v0.2.0
 ```
 
-```mog
-const http = @import("github.com/moglang/http")
+```kelvra
+const http = @import("github.com/kelvralang/http")
 
 const server http.Server = http.createServer()
 http.get(server, "/users/:id", fn(req http.Request, res http.Response) void {
@@ -34,7 +34,7 @@ routes. Request handles are owned snapshots: method, raw URL/path, headers,
 decoded query values, named parameters, peer address, and body remain readable
 after the callback. The default body limit is 1 MiB and can be changed with
 `setMaxBodySize` before `listen`. `bodyText` copies the exact request bytes into
-a Mog `str` without decoding or UTF-8 validation; use `bodyBytes` when those
+a Kelvra `str` without decoding or UTF-8 validation; use `bodyBytes` when those
 bytes should remain explicitly binary.
 
 Responses stage status and headers until one terminal operation: `text`,
@@ -49,7 +49,7 @@ body bytes.
 
 ## WebSockets
 
-```mog
+```kelvra
 const route http.WebSocketRoute = http.createWebSocketRoute()
 
 http.onOpen(route, fn(socket http.WebSocket, req http.Request) void {
@@ -82,12 +82,12 @@ Send results are package constants:
 Sockets support subscribe/unsubscribe/membership and socket-scoped text or
 binary publish. A publisher must subscribe to the topic, does not receive its
 own publication, and `true` means at least one eligible subscriber was queued.
-`setSocketData` retains any Mog value with exact object identity across garbage
+`setSocketData` retains any Kelvra value with exact object identity across garbage
 collection; the root is released after the close callback. Handler failures in
 open, message, or drain callbacks close the connection with 1011.
 Socket data is available during `onClose` and unavailable after that callback
 returns. Custom WebSocket upgrade authentication or rejection is not part of
-v0.1.0.
+v0.2.0.
 
 ## Execution and lifetime model
 
@@ -95,10 +95,10 @@ v0.1.0.
 callback run synchronously on that one thread; there is no async/await or
 background callback thread. Call `stop` before `run`, from a callback, or more
 than once. Shutdown closes listeners and active sockets while callback roots are
-still valid. v0.1.0 has no graceful OS-signal integration; Ctrl+C uses ordinary
+still valid. v0.2.0 has no graceful OS-signal integration; Ctrl+C uses ordinary
 process termination.
 
-```mog
+```kelvra
 http.get(server, "/shutdown", fn(req http.Request, res http.Response) void {
     http.text(res, "shutting down")
     http.stop(server)
@@ -122,5 +122,5 @@ GCD, QUIC, and io_uring disabled.
 
 The package is GPL-3.0-only. Vendored dependency revisions and their Apache-2.0
 and MIT notices are documented in [`vendor/THIRD_PARTY.md`](vendor/THIRD_PARTY.md).
-Run `tests/test_http_package.sh /path/to/mog .` for package validation and the
+Run `tests/test_http_package.sh /path/to/kelvra .` for package validation and the
 standard-library-only HTTP/WebSocket integration suite.

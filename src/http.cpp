@@ -7,7 +7,7 @@
 #include <limits>
 #include <string_view>
 
-namespace mog::http {
+namespace kelvra::http {
 namespace {
 
 bool ensureMutable(const std::shared_ptr<ResponseState> &response,
@@ -309,4 +309,4 @@ void invalidateResponse(const std::shared_ptr<ResponseState> &response) {
   }
 }
 
-} // namespace mog::http
+} // namespace kelvra::http

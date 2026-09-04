@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace mog::http {
+namespace kelvra::http {
 
 class HostBridge {
 public:
@@ -42,4 +42,4 @@ private:
 bool retainRoot(const HostBridge &host, const ExprPackageValue &borrowed,
                 std::unique_ptr<PersistentRoot> &out, std::string &error);
 
-} // namespace mog::http
+} // namespace kelvra::http

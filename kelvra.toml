@@ -1,0 +1,17 @@
+kind = "native"
+module = "github.com/kelvralang/http"
+import_name = "http"
+namespace = "github"
+name = "http"
+version = "0.2.0"
+license = "GPL-3.0-only"
+abi_version = 3
+kelvra_runtime = "^0.2.0"
+author = "Kelvra contributors"
+description = "Native HTTP and WebSocket server package for Kelvra."
+repository = "https://github.com/kelvralang/http"
+dependencies = []
+
+[native]
+build = "cmake"
+targets = ["linux-x86_64-gnu", "linux-arm64-gnu", "macos-arm64"]

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   compatibility:
-    name: ${{ matrix.target }} / Mog ${{ matrix.runtime_ref }}
+    name: ${{ matrix.target }} / Kelvra ${{ matrix.runtime_ref }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 25
     strategy:
@@ -24,44 +24,44 @@ jobs:
         include:
           - runner: ubuntu-latest
             target: linux-x86_64-gnu
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
           - runner: ubuntu-24.04-arm
             target: linux-arm64-gnu
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
           - runner: macos-14
             target: macos-arm64
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          repository: moglang/mog
+          repository: kelvralang/kelvra
           ref: ${{ matrix.runtime_ref }}
-          path: .runtime/mog
+          path: .runtime/kelvra
       - name: Verify release metadata
         shell: bash
         run: |
           set -euo pipefail
-          version="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' mog.toml | head -n 1)"
+          version="$(sed -n 's/^version = "\([^\"]*\)"/\1/p' kelvra.toml | head -n 1)"
           test -n "$version"
           test -f LICENSE
-          test -f package.api.mog
+          test -f package.api.kel
           test -f tests/test_http_package.sh
           grep -Fq "## $version" CHANGELOG.md
-          grep -q '^```mog' README.md
-          grep -Fq '"${{ matrix.target }}"' mog.toml
+          grep -q '^```kelvra' README.md
+          grep -Fq '"${{ matrix.target }}"' kelvra.toml
           grep -Fq "GNU GENERAL PUBLIC LICENSE" LICENSE
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             test "${GITHUB_REF_NAME#v}" = "$version"
           fi
-      - name: Build Mog runtime
+      - name: Build Kelvra runtime
         run: |
-          cmake -S .runtime/mog -B .runtime/mog/build \
-            -DCMAKE_BUILD_TYPE=Release -DMOG_VERSION=0.1.6
-          cmake --build .runtime/mog/build --parallel
+          cmake -S .runtime/kelvra -B .runtime/kelvra/build \
+            -DCMAKE_BUILD_TYPE=Release -DKELVRA_VERSION=0.2.0
+          cmake --build .runtime/kelvra/build --parallel
       - name: Build, validate, and test package
         run: |
-          ./tests/test_http_package.sh ./.runtime/mog/build/interpreter .
+          ./tests/test_http_package.sh ./.runtime/kelvra/build/kelvra .
 
   validate:
     if: always()
@@ -87,21 +87,21 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          repository: moglang/mog
-          ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
-          path: .runtime/mog
+          repository: kelvralang/kelvra
+          ref: main
+          path: .runtime/kelvra
       - name: Install Valgrind
         run: sudo apt-get update && sudo apt-get install -y valgrind
-      - name: Build Mog runtime
+      - name: Build Kelvra runtime
         run: |
-          cmake -S .runtime/mog -B .runtime/mog/build \
-            -DCMAKE_BUILD_TYPE=Debug -DMOG_VERSION=0.1.6
-          cmake --build .runtime/mog/build --target interpreter --parallel 2
+          cmake -S .runtime/kelvra -B .runtime/kelvra/build \
+            -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0
+          cmake --build .runtime/kelvra/build --target kelvra --parallel 2
       - name: Run Valgrind smoke suite
         env:
-          MOG_HTTP_VALGRIND: "1"
-          MOG_HTTP_CHURN_COUNT: "100"
-        run: ./tests/test_http_package.sh ./.runtime/mog/build/interpreter .
+          KELVRA_HTTP_VALGRIND: "1"
+          KELVRA_HTTP_CHURN_COUNT: "100"
+        run: ./tests/test_http_package.sh ./.runtime/kelvra/build/kelvra .
 
   sanitizers:
     name: ${{ matrix.name }}
@@ -119,28 +119,28 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          repository: moglang/mog
-          ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
-          path: .runtime/mog
-      - name: Build instrumented Mog runtime
+          repository: kelvralang/kelvra
+          ref: main
+          path: .runtime/kelvra
+      - name: Build instrumented Kelvra runtime
         env:
           SANITIZER_MODE: ${{ matrix.mode }}
         run: |
           if [[ "$SANITIZER_MODE" == "asan-ubsan" ]]; then
-            cmake -S .runtime/mog -B .runtime/mog/build \
-              -DCMAKE_BUILD_TYPE=Debug -DMOG_VERSION=0.1.6 -DENABLE_ASAN=ON
+            cmake -S .runtime/kelvra -B .runtime/kelvra/build \
+              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0 -DENABLE_ASAN=ON
           else
-            cmake -S .runtime/mog -B .runtime/mog/build \
-              -DCMAKE_BUILD_TYPE=Debug -DMOG_VERSION=0.1.6 \
+            cmake -S .runtime/kelvra -B .runtime/kelvra/build \
+              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0 \
               -DCMAKE_C_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
               -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
               -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread" \
               -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=thread"
           fi
-          cmake --build .runtime/mog/build --target interpreter --parallel 2
+          cmake --build .runtime/kelvra/build --target kelvra --parallel 2
       - name: Run instrumented package suite
         env:
-          MOG_HTTP_SANITIZER: ${{ matrix.mode }}
+          KELVRA_HTTP_SANITIZER: ${{ matrix.mode }}
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
           TSAN_OPTIONS: halt_on_error=1
@@ -148,4 +148,4 @@ jobs:
           if [[ "${{ matrix.mode }}" == "tsan" ]]; then
             sudo sysctl -w vm.mmap_rnd_bits=28
           fi
-          ./tests/test_http_package.sh ./.runtime/mog/build/interpreter .
+          ./tests/test_http_package.sh ./.runtime/kelvra/build/kelvra .

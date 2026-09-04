@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace mog::http {
+namespace kelvra::http {
 
 struct RequestState;
 struct ServerState;
@@ -66,4 +66,4 @@ int64_t sendWebSocket(const std::shared_ptr<WebSocketState> &socket,
                       std::string_view message, uWS::OpCode opcode,
                       std::string &error);
 
-} // namespace mog::http
+} // namespace kelvra::http

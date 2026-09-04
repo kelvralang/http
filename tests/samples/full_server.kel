@@ -1,4 +1,4 @@
-const http = @import("github.com/moglang/http")
+const http = @import("github.com/kelvralang/http")
 
 const server http.Server = http.createServer()
 http.setMaxBodySize(server, 64i64)
@@ -92,7 +92,7 @@ http.get(server, "/bad-query", fn(req http.Request, res http.Response) void {
     http.text(res, "null")
 })
 http.get(server, "/custom-content-type", fn(req http.Request, res http.Response) void {
-    http.header(res, "Content-Type", "application/x-mog")
+    http.header(res, "Content-Type", "application/x-kelvra")
     http.text(res, "custom")
 })
 http.get(server, "/lifecycle-error", fn(req http.Request, res http.Response) void {

@@ -9,7 +9,7 @@
 #include <limits>
 #include <vector>
 
-namespace mog::http {
+namespace kelvra::http {
 namespace {
 
 std::unique_ptr<PersistentRoot> &callbackSlot(WebSocketRouteState &route,
@@ -303,4 +303,4 @@ int64_t sendWebSocket(const std::shared_ptr<WebSocketState> &socket,
   return 2;
 }
 
-} // namespace mog::http
+} // namespace kelvra::http

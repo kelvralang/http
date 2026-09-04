@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace mog::http {
+namespace kelvra::http {
 
 bool fail(ExprPackageStringView *outError, std::string message);
 bool readString(const ExprPackageValue &value, std::string &out,
@@ -22,4 +22,4 @@ bool asciiCaseEqual(std::string_view lhs, std::string_view rhs);
 bool validUtf8(std::string_view text);
 bool validWebSocketCloseCode(int64_t code);
 
-} // namespace mog::http
+} // namespace kelvra::http
