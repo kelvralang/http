@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace mog::http {
+namespace kelvra::http {
 
 template <typename State> struct HandleBox {
   std::shared_ptr<State> state;
@@ -45,4 +45,4 @@ bool readHandleBox(const ExprPackageValue &value, const char *expectedType,
   return static_cast<bool>(out);
 }
 
-} // namespace mog::http
+} // namespace kelvra::http

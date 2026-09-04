@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Rename the package's language sources, manifest, examples, automation, and
+  documentation from Mog to Kelvra, requiring Kelvra 0.2.0 or newer.
+
 ## 0.1.0
 
 - Add complete HTTP route, request snapshot, body-limit, response helper,

@@ -1,6 +1,6 @@
 # Local v0.1.0 smoke baseline
 
-Recorded 2026-08-09 with a Debug Mog/runtime and package build on Ubuntu 24.04,
+Recorded 2026-08-09 with a Debug Kelvra/runtime and package build on Ubuntu 24.04,
 Linux 6.17, x86_64, AMD Ryzen 7 7730U (8 cores/16 threads). The client and server
 ran on loopback. HTTP samples open one connection per request; 200 operations
 were measured per request/message case.
@@ -18,7 +18,7 @@ were measured per request/message case.
 | 100 | 13.8 MiB |
 | 1,000 | 15.3 MiB |
 
-The local run was capped at 1,000 idle connections; Mog exposes no
+The local run was capped at 1,000 idle connections; Kelvra exposes no
 portable allocation counter (`allocation_count` is `null`). These are
 non-gating smoke numbers for regression orientation, not comparisons with raw
 uWebSockets or another runtime.

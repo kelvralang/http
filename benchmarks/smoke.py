@@ -43,30 +43,30 @@ def rss_bytes(process: subprocess.Popen[str]) -> int | None:
 
 def main() -> int:
     if len(sys.argv) not in (4, 5, 6):
-        print("usage: smoke.py <mog> <package-dir> <package-library> [iterations] [max-idle]", file=sys.stderr)
+        print("usage: smoke.py <kelvra> <package-dir> <package-library> [iterations] [max-idle]", file=sys.stderr)
         return 2
-    mog, package, library = map(lambda value: Path(value).resolve(), sys.argv[1:4])
+    kelvra, package, library = map(lambda value: Path(value).resolve(), sys.argv[1:4])
     iterations = int(sys.argv[4]) if len(sys.argv) >= 5 else 200
     max_idle = int(sys.argv[5]) if len(sys.argv) >= 6 else 1000
     port = free_port()
-    with tempfile.TemporaryDirectory(prefix="mog-http-benchmark-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="kelvra-http-benchmark-") as temporary:
         root = Path(temporary)
-        staged = root / "github.com" / "moglang" / "http"
+        staged = root / "github.com" / "kelvralang" / "http"
         project = root / "project"
         shutil.copytree(package, staged, ignore=shutil.ignore_patterns("build", ".git", "__pycache__"))
         shutil.copy2(library, staged / ("package.dylib" if sys.platform == "darwin" else "package.so"))
         project.mkdir()
-        source = (package / "benchmarks" / "benchmark_server.mog").read_text(encoding="utf-8")
-        (project / "server.mog").write_text(source.replace("__PORT__", f"{port}i64"), encoding="utf-8")
-        (project / "mog.toml").write_text(
+        source = (package / "benchmarks" / "benchmark_server.kel").read_text(encoding="utf-8")
+        (project / "server.kel").write_text(source.replace("__PORT__", f"{port}i64"), encoding="utf-8")
+        (project / "kelvra.toml").write_text(
             'kind = "project"\nname = "http-benchmark"\nversion = "0.0.0"\n\n'
-            f'[dependencies]\n"github.com/moglang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
+            f'[dependencies]\n"github.com/kelvralang/http" = {{ path = "{staged}", version = "0.1.0" }}\n',
             encoding="utf-8",
         )
         environment = os.environ.copy()
-        environment["MOG_CACHE_DIR"] = str(root / "cache")
+        environment["KELVRA_CACHE_DIR"] = str(root / "cache")
         process = subprocess.Popen(
-            [str(mog), "run", "--offline", "server.mog"], cwd=project,
+            [str(kelvra), "run", "--offline", "server.kel"], cwd=project,
             env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         )
         try:

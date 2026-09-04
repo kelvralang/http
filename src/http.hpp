@@ -13,7 +13,7 @@ template <bool SSL> struct HttpResponse;
 struct HttpRequest;
 } // namespace uWS
 
-namespace mog::http {
+namespace kelvra::http {
 
 struct RequestState {
   std::string method;
@@ -60,4 +60,4 @@ void completeAutomaticNoContent(const std::shared_ptr<ResponseState> &response);
 void completeInternalError(const std::shared_ptr<ResponseState> &response);
 void invalidateResponse(const std::shared_ptr<ResponseState> &response);
 
-} // namespace mog::http
+} // namespace kelvra::http

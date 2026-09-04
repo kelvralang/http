@@ -3,7 +3,7 @@
 #include <cctype>
 #include <unordered_set>
 
-namespace mog::http {
+namespace kelvra::http {
 
 bool fail(ExprPackageStringView *outError, std::string message) {
   static thread_local std::string storage;
@@ -139,4 +139,4 @@ bool validWebSocketCloseCode(int64_t code) {
          code != 1006;
 }
 
-} // namespace mog::http
+} // namespace kelvra::http

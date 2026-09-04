@@ -12,7 +12,7 @@
 #include <limits>
 #include <unordered_map>
 
-namespace mog::http {
+namespace kelvra::http {
 namespace {
 
 std::unordered_map<void *, std::weak_ptr<ServerState>> activeServers;
@@ -397,4 +397,4 @@ void ServerState::releaseCallbacks() {
   }
 }
 
-} // namespace mog::http
+} // namespace kelvra::http
