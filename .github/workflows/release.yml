@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           repository: kelvralang/kelvra
-          ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+          ref: main
           path: .runtime/kelvra
       - name: Verify tag and manifest version
         shell: bash
@@ -52,7 +52,7 @@ jobs:
       - name: Build Kelvra runtime
         run: |
           cmake -S .runtime/kelvra -B .runtime/kelvra/build \
-            -DCMAKE_BUILD_TYPE=Release -DKELVRA_VERSION=0.1.6
+            -DCMAKE_BUILD_TYPE=Release -DKELVRA_VERSION=0.2.0
           cmake --build .runtime/kelvra/build --parallel
       - name: Validate package and run tests
         run: ./tests/test_http_package.sh ./.runtime/kelvra/build/kelvra .

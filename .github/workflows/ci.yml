@@ -24,13 +24,13 @@ jobs:
         include:
           - runner: ubuntu-latest
             target: linux-x86_64-gnu
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
           - runner: ubuntu-24.04-arm
             target: linux-arm64-gnu
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
           - runner: macos-14
             target: macos-arm64
-            runtime_ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+            runtime_ref: main
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -57,7 +57,7 @@ jobs:
       - name: Build Kelvra runtime
         run: |
           cmake -S .runtime/kelvra -B .runtime/kelvra/build \
-            -DCMAKE_BUILD_TYPE=Release -DKELVRA_VERSION=0.1.6
+            -DCMAKE_BUILD_TYPE=Release -DKELVRA_VERSION=0.2.0
           cmake --build .runtime/kelvra/build --parallel
       - name: Build, validate, and test package
         run: |
@@ -88,15 +88,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           repository: kelvralang/kelvra
-          ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+          ref: main
           path: .runtime/kelvra
       - name: Install Valgrind
         run: sudo apt-get update && sudo apt-get install -y valgrind
       - name: Build Kelvra runtime
         run: |
           cmake -S .runtime/kelvra -B .runtime/kelvra/build \
-            -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.1.6
-          cmake --build .runtime/kelvra/build --target interpreter --parallel 2
+            -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0
+          cmake --build .runtime/kelvra/build --target kelvra --parallel 2
       - name: Run Valgrind smoke suite
         env:
           KELVRA_HTTP_VALGRIND: "1"
@@ -120,7 +120,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           repository: kelvralang/kelvra
-          ref: 7f161c4a77c13b54261b45cefae6782ba2bce9f2
+          ref: main
           path: .runtime/kelvra
       - name: Build instrumented Kelvra runtime
         env:
@@ -128,16 +128,16 @@ jobs:
         run: |
           if [[ "$SANITIZER_MODE" == "asan-ubsan" ]]; then
             cmake -S .runtime/kelvra -B .runtime/kelvra/build \
-              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.1.6 -DENABLE_ASAN=ON
+              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0 -DENABLE_ASAN=ON
           else
             cmake -S .runtime/kelvra -B .runtime/kelvra/build \
-              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.1.6 \
+              -DCMAKE_BUILD_TYPE=Debug -DKELVRA_VERSION=0.2.0 \
               -DCMAKE_C_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
               -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
               -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread" \
               -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=thread"
           fi
-          cmake --build .runtime/kelvra/build --target interpreter --parallel 2
+          cmake --build .runtime/kelvra/build --target kelvra --parallel 2
       - name: Run instrumented package suite
         env:
           KELVRA_HTTP_SANITIZER: ${{ matrix.mode }}
